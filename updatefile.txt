@@ -4,34 +4,16 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3"
+			"Latest"	"3.0"
 		}
 		
-		"Notes"	"More info @ miggthulu.com/integritf2    Changes in 2.3:"
-		"Notes"	"Restored Anti-Wallhack, IP Logging to check for Alts"
+		"Notes"	"More info @ miggthulu.com/integritf2    Changes in 3.0:"
+		"Notes"	"Added new convar checks, updated GEOIP databases"
+		"Notes"	"Updated all plugins to use current versions"
 	}
 	
 	"Files"
 	{
-
 		"Plugin"	"Path_SM/plugins/integriTF2.smx"
-		"Source"	"Path_SM/scripting/integriTF2.sp"
-		"Plugin"	"Path_SM/plugins/smac.smx"
-		"Source"	"Path_SM/scripting/smac.sp"
-		"Plugin"	"Path_SM/translations/smac.phrases.txt"
-		"Plugin"	"Path_SM/scripting/include/colors.inc"
-		"Plugin"	"Path_SM/scripting/include/smac.inc"
-		"Plugin"	"Path_SM/scripting/include/smac_stocks.inc"
-		"Plugin"	"Path_SM/scripting/include/smac_wallhack.inc"
-		"Plugin"	"Path_SM/plugins/ParanoiaIPTracker.smx"
-		"Source"	"Path_SM/scripting/ParanoiaIPTracker.sp"
-		"Plugin"	"Path_SM/configs/databases.cfg"
-		"Plugin"	"/cfg/pure_server_whitelist.txt"
-		"Plugin"  	"/cfg/item_whitelist_ugc_hl.txt"
-		"Plugin"  	"/cfg/item_whitelist_ugc_6v6.txt"
-		"Plugin"  	"/cfg/item_whitelist_ugc_4v4.txt"
-		"Plugin"	"/cfg/ugc_hl_base.cfg"
-		"Plugin"	"/cfg/ugc_6v_base.cfg"
-		"Plugin"	"/cfg/ugc_4v_base.cfg"
 	}
 }
