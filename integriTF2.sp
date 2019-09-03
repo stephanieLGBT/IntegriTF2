@@ -1,41 +1,12 @@
 #pragma semicolon 1
 #include <sourcemod>
 #include <geoipcity>
-#include <socket>
-#include <smjansson>
 #undef REQUIRE_PLUGIN
 #include <updater>
-
-#define PLUGIN_VERSION "2.3"
-
+#define PLUGIN_VERSION "3.0"
 #define CVAR_MAXLEN 64
-
-/**
-//Ignore, holding onto for POVminder
-#define API_ROSTER_HOST "ugcleague.com"
-#define API_ROSTER_DIR "/api/api.php?key={key}&player={id64}"
-#define API_ROSTER_URL "http://www.ugcleague.com/api/api.php?key={key}&player={id64}"
-**/
-
-//Current Banlist API info
-#define API_BANLIST_HOST "ugcleague.com"
-#define API_BANLIST_DIR "/api/api.php?key={key}&ban_list"
-#define API_BANLIST_URL "http://www.ugcleague.com/api/api.php?key={key}&ban_list"
-
-
-/**
-//Old API, ignore
-#define API_BANLIST_HOST "ugcleague.com"
-#define API_BANLIST_DIR "/json_ban_info.cfm"
-#define API_BANLIST_URL "http://www.ugcleague.com/json_ban_info.cfm"
-**/
-
 #define MAX_URL_LENGTH 256
-#define UPDATE_URL "http://miggthulu.com/integritf2/updatefile.txt"
-
-
-
-#include helpers/download_socket.sp
+#define UPDATE_URL "http://stephanielgbt.github.io/integritf2/updatefile.txt"
 #include helpers/filesys.sp
 
 public Plugin myinfo = {
@@ -58,9 +29,6 @@ ConVar g_CvarCloakInvisTime;
 ConVar g_CvarCloakUnInvisTime;
 ConVar g_CvarDroppedWeaponLifetime;
 
-//Banlist API Cvar
-new Handle:g_Cvar_API = INVALID_HANDLE;
-new Handle:g_hPlayerList;
 
 int g_TeleFovStart = 90;
 int g_DroppedWeaponLifetime = 0;
@@ -93,13 +61,8 @@ void resetConVar(ConVar convar)
 public void OnPluginStart()
 {
 
-	/**Reads Ban List API Key**/
-	//THIS CREATES A FILE CALLED "IntegriTF2api.cfg" IN YOUR tf/cfg/sourcemod/ folder. Place your API keys here
-	//In the IntegriTF2api.cfg write the following line:        sm_ugcbanapi "PLACEYOURAPIKEYHERE"
-	g_Cvar_API = CreateConVar("sm_ugcbanapi", "", "Place your Api key here");
 	AutoExecConfig(true, "IntegriTF2api");
 	
-	//GetConVarString(g_Cvar_API, <string buffer>, <string buffer length);
 
 
 
@@ -137,10 +100,7 @@ public void OnPluginStart()
 	g_CvarDroppedWeaponLifetime = FindConVar("tf_dropped_weapon_lifetime");
 	initConVar(g_CvarDroppedWeaponLifetime);
 
-	CreateTimer(5.0, Timer_CheckClientConVars);
-
-	
-	CheckBanlistApi();
+	CreateTimer(2.0, Timer_CheckClientConVars);
 
 	
 	if (LibraryExists("updater"))
@@ -199,59 +159,6 @@ public void OnClientAuthorized(int client, const char[] sAuth)
 	}
 }
 
-//**												**//
-//					Player Ban Check				  //
-//**												**//
-
-if (g_hPlayerList != INVALID_HANDLE) {
-        CloseHandle(g_hPlayerList);
-    }
-g_hPlayerList = CreateArray(64);
-
-    // open config
-new Handle:hKV = CreateKeyValues("root");
-if (!FileToKeyValues(hKV, sPath)) {
-        CloseHandle(hKV);
-        LogError("Cannot load data from file '%s' !", sPath);
-        return;
-}
-
-    // read condig
-if (!KvGotoFirstSubKey(hKV, false)) {
-        LogError("Cannot load first key from file '%s' !", sPath);
-        CloseHandle(hKV);
-        return;
-}
-
-
-new String:sSteamID[64];
-do
-    {
-        KvGetSectionName(hKV, sSteamID, sizeof(sSteamID));
-        //KvGetString(hKV, NULL_STRING, sIP, sizeof(sIP));
-        
-        //LogMessage("SteamID = '%s'", sSteamID);
-        
-        PushArrayString(g_hPlayerList, sSteamID);
-        //PushArrayString(g_hPlayerList, sIP);
-} while (KvGotoNextKey(hKV, false));
-
-CloseHandle(hKV);
-
-public OnClientAuthorized(iClient, const String:sAuth[])
-{
-new String:sIP[64];
-GetClientIP(iClient, sIP, sizeof(sIP));
-
-if (FindStringInArray(g_hPlayerList, sAuth) != -1) {
-        // connected player's ip or steamid is in config
-PrintToChatAll("%N is currently Banned in UGC", iClient);
-}
-
-}
-//**												**//
-//**												**//
-
 public Action EventRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
 	PrintToChatAll("[IntegriTF2] This Server is running IntegriTF2 version %s", PLUGIN_VERSION);
@@ -261,26 +168,58 @@ public Action EventRoundStart(Handle event, const char[] name, bool dontBroadcas
 public Action Event_Player_Spawn(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	QueryClientConVar(client, "r_drawothermodels", ConVarQueryFinished:ClientConVar);
+	QueryClientConVar(client, "cl_interp", ConVarQueryFinished:ClientConVar1);
+	QueryClientConVar(client, "r_drawothermodels", ConVarQueryFinished:ClientConVar2);
+	QueryClientConVar(client, "cl_interp_ratio", ConVarQueryFinished:ClientConVar3);
 	return Plugin_Continue;
 }
+ 
 
-
-
-public void ClientConVar(QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue, any value)
+public void ClientConVar1(QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue)
 {
 	if (client == 0 || !IsClientInGame(client))
 		return;
 
 	if (result != ConVarQuery_Okay)
 		PrintToChatAll("[IntegriTF2] Unable to check CVar %s on player %N.", cvarName, client);
-	else if (StringToInt(cvarValue) == 2)
-		PrintToChatAll("[IntegriTF2] Player %N is using CVar %s = %s, potentially exploiting.", client, cvarName, cvarValue);
+	else if (StringToFloat(cvarValue) > 0.100000)
+		{
+//		PrintToChatAll("[IntegriTF2] Player %N is using CVar %s = %s, exploiting.", client, cvarName, cvarValue);
+		KickClient(client, "CVar %s = %s, outside reasonable bounds. Try changing it to something sane", cvarName, cvarValue);
+		LogMessage("[IntegriTF2] Player %N is using CVar %s = %s, kicked from server.", client, cvarName, cvarValue);
+		}
 }
 
 
+public void ClientConVar2(QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue)
+{
+	if (client == 0 || !IsClientInGame(client))
+		return;
 
+	if (result != ConVarQuery_Okay)
+		PrintToChatAll("[IntegriTF2] Unable to check CVar %s on player %N.", cvarName, client);
+	else if
+		(StringToInt(cvarValue) != 1)
+		{
+//		PrintToChatAll("[IntegriTF2] Player %N is using CVar %s = %s, exploiting.", client, cvarName, cvarValue);
+		KickClient(client, "CVar %s = %s, outside reasonable bounds. Try changing it to something sane", cvarName, cvarValue);
+		LogMessage("[IntegriTF2] Player %N is using CVar %s = %s, kicked from server.", client, cvarName, cvarValue);
+		}
+}
 
+public void ClientConVar3(QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue)
+{
+	if (client == 0 || !IsClientInGame(client))
+		return;
+	if (result != ConVarQuery_Okay)
+		PrintToChatAll("[IntegriTF2] Unable to check CVar %s on player %N.", cvarName, client);
+	else if (StringToFloat(cvarValue) > 2 || StringToFloat(cvarValue) < 1 )
+		{
+//		PrintToChatAll("[IntegriTF2] Player %N is using CVar %s = %s, exploiting.", client, cvarName, cvarValue);
+		KickClient(client, "CVar %s = %s, outside reasonable bounds. Try changing it to something sane", cvarName, cvarValue);
+		LogMessage("[IntegriTF2] Player %N is using CVar %s = %s, kicked from server.", client, cvarName, cvarValue);
+		}
+}
 
 public Action:Timer_CheckClientConVars(Handle:timer)
 {
@@ -288,9 +227,10 @@ public Action:Timer_CheckClientConVars(Handle:timer)
 	{
 		if (IsClientInGame(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 		{
-			QueryClientConVar(client, "r_drawothermodels", ConVarQueryFinished:ClientConVar, client);
-			//QueryClientConVar(client, "glow_outline_effect_enable", ConVarQueryFinished:ClientConVar2, client);
-			//QueryClientConVar(client, "enable_skeleton_draw", ConVarQueryFinished:ClientConVar3, client);
+			QueryClientConVar(client, "cl_interp", ConVarQueryFinished:ClientConVar1);
+			QueryClientConVar(client, "r_drawothermodels", ConVarQueryFinished:ClientConVar2);
+			QueryClientConVar(client, "cl_interp_ratio", ConVarQueryFinished:ClientConVar3);
+			//QueryClientConVar(client, "enable_skeleton_draw", ConVarQueryFinished:ClientConVar, client);
 		}
 	}
 
@@ -302,23 +242,4 @@ public void OnPluginEnd()
 	PrintToChatAll("[IntegriTF2] has been unloaded.");
 }
 
-
-void CheckBanlistApi()
-{
-	Download_Socket(API_BANLIST_URL, "ugc_banlist.json");
-	
-	//new Handle:hSocket = SocketCreate(SOCKET_TCP, OnSocketError);
-	//SocketSetArg(hSocket, hFile);
-	//SocketConnect(hSocket, OnSocketConnected, OnSocketReceive, OnSocketDisconnected, "ugcleague.com", 80);
-}
-
-
-
-void DownloadEnded(bool successful, char error[]="")
-{
-	if ( ! successful) {
-		LogError("Download attempt failed: %s", error);
-		return;
-	}
-}
 
