@@ -41,32 +41,16 @@
 		"en"		"Your client has failed to authorize in time. Please reconnect or restart your game"
 	}
 	
-	"SMAC_ClientCorrupt"
-	{
-		"en"		"Your client has become corrupted. Please restart your game before reconnecting"
-	}
-	
-	"SMAC_RemovePlugins"
-	{
-		"en"		"Please remove any third party plugins from your client before joining this server again"
-	}
-	
-	"SMAC_HasPlugin"
-	{
-		"#format"	"{1:N},{2:s}"
-		"en"		"{1} has a plugin running, returned {2}."
-	}
-	
 	"SMAC_Muted"
 	{
 		"#format"	"{1:N}"
 		"en"		"{1} has been muted by SourceMod Anti-Cheat."
 	}
 	
-	"SMAC_HasNotEqual"
+	"SMAC_CvarViolation"
 	{
-		"#format"	"{1:N},{2:s},{3:s},{4:s}"
-		"en"		"{1} returned a bad value on {2} (value {3}, should be {4})."
+		"#format"	"{1:N},{2:s}"
+		"en"		"{1} returned a bad value on {2}."
 	}
 	
 	"SMAC_ShouldEqual"
@@ -75,22 +59,10 @@
 		"en"		"Your convar {1} should equal {2} but it was set to {3}. Please correct this before rejoining"
 	}
 	
-	"SMAC_HasNotGreater"
-	{
-		"#format"	"{1:N},{2:s},{3:s},{4:s}"
-		"en"		"{1} has convar {2} set to {3} when it should be greater than or equal to {4}."
-	}
-	
 	"SMAC_ShouldBeGreater"
 	{
 		"#format"	"{1:s},{2:s},{3:s}"
 		"en"		"Your convar {1} should be greater than or equal to {2} but was set to {3}. Please correct this before rejoining"
-	}
-	
-	"SMAC_HasNotLess"
-	{
-		"#format"	"{1:N},{2:s},{3:s},{4:s}"
-		"en"		"{1} has convar {2} set to {3} when it should be less than or equal to {4}."
 	}
 	
 	"SMAC_ShouldBeLess"
@@ -99,16 +71,16 @@
 		"en"		"Your convar {1} should be less than or equal to {2} but was set to {3}. Please correct this before rejoining"
 	}
 	
-	"SMAC_HasNotBound"
+	"SMAC_ShouldBeBetween"
 	{
-		"#format"	"{1:N},{2:s},{3:s},{4:s},{5:f}"
-		"en"		"{1} has convar {2} set to {3} when it should be between {4} and {5}."
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Your convar {1} should be between {2} and {3} but was set to {4}. Please correct this before rejoining"
 	}
 	
-	"SMAC_ShouldBound"
+	"SMAC_ShouldBeOutside"
 	{
-		"#format"	"{1:s},{2:s},{3:f},{4:s}"
-		"en"		"Your convar {1} should be between {2} and {3} but was set to {4}. Please correct this before rejoining"
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"Your convar {1} should not be between {2} and {3} but was set to {4}. Please correct this before rejoining"
 	}
 	
 	"SMAC_ChangeName"
