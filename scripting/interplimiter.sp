@@ -1,9 +1,8 @@
 #pragma semicolon 1
 #include <sourcemod>
-#include <geoipcity>
 #include <morecolors>
 #undef REQUIRE_PLUGIN
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
 #define CVAR_MAXLEN 64
 #define MAX_URL_LENGTH 256
 
